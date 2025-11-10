@@ -1,32 +1,21 @@
 import os
-from flask import Flask
+from typing import Optional
 
-from .database import db, migrate_database
+from .server import ProSyncApp
 
 
-def create_app(test_config=None):
-    app = Flask(__name__)
-    app.config.from_mapping(
-        SECRET_KEY=os.environ.get("PROSYNC_SECRET", "change-me"),
-        SQLALCHEMY_DATABASE_URI=os.environ.get("PROSYNC_DATABASE", "sqlite:///prosync.db"),
-        SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    )
+def create_app(config: Optional[dict] = None) -> ProSyncApp:
+    settings = {
+        "DATABASE_PATH": os.environ.get("PROSYNC_DATABASE", os.path.join(os.getcwd(), "prosync.db")),
+        "UPLOAD_FOLDER": os.environ.get("PROSYNC_UPLOAD_FOLDER", os.path.join(os.getcwd(), "uploads")),
+        "MAX_UPLOAD_SIZE": int(os.environ.get("PROSYNC_MAX_UPLOAD", 500 * 1024 * 1024)),
+        "UPLOAD_EXTENSIONS": {".pro", ".pro5", ".pro6", ".pro7"},
+        "LOG_PATH": os.environ.get("PROSYNC_UPLOAD_LOG", os.path.join(os.getcwd(), "logs", "uploads.log")),
+        "BACKUP_DIR": os.environ.get("PROSYNC_BACKUP_DIR", os.path.join(os.getcwd(), "backups")),
+    }
 
-    upload_folder = os.environ.get("PROSYNC_UPLOAD_FOLDER", os.path.join(os.getcwd(), "uploads"))
-    os.makedirs(upload_folder, exist_ok=True)
-    app.config["UPLOAD_FOLDER"] = upload_folder
-    app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("PROSYNC_MAX_UPLOAD", 500 * 1024 * 1024))
-    app.config["UPLOAD_EXTENSIONS"] = {".pro", ".pro5", ".pro6", ".pro7"}
+    if config:
+        settings.update(config)
 
-    if test_config:
-        app.config.update(test_config)
-
-    db.init_app(app)
-
-    with app.app_context():
-        migrate_database()
-        from .routes import bp
-
-        app.register_blueprint(bp)
-
+    app = ProSyncApp(settings)
     return app
