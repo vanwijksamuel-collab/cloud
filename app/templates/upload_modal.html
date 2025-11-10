@@ -1,0 +1,57 @@
+<div id="upload-modal" class="modal hidden" aria-hidden="true" role="dialog">
+  <div class="modal-backdrop" data-close-upload></div>
+  <div class="modal-content" role="document">
+    <header class="modal-header">
+      <h2 class="text-lg font-semibold text-slate-900">Upload presentatie</h2>
+      <button class="modal-close" type="button" data-close-upload aria-label="Sluiten">×</button>
+    </header>
+    <form id="upload-form" class="space-y-4" action="{{ url_for('core.upload') }}" method="post" enctype="multipart/form-data">
+      <div class="dropzone" data-dropzone>
+        <input id="file-input" type="file" name="file" accept=".pro,.pro5,.pro6,.pro7" required hidden />
+        <p class="text-center text-sm text-slate-500">
+          Sleep je bestand hierheen of <button class="text-blue-600" type="button" data-trigger-file>Kies bestand</button>
+        </p>
+        <p id="selected-file" class="mt-2 text-center text-xs text-slate-400"></p>
+      </div>
+      <div>
+        <label class="form-label" for="logical_name">Logical name</label>
+        <input class="form-input" id="logical_name" name="logical_name" placeholder="Auto afgeleid van bestandsnaam" />
+      </div>
+      <div>
+        <label class="form-label" for="service_type">Diensttype</label>
+        <input class="form-input" id="service_type" name="service_type" list="service-types" placeholder="Bijv. Zondag" />
+        <datalist id="service-types">
+          {% for service in service_types %}
+            <option value="{{ service }}"></option>
+          {% endfor %}
+        </datalist>
+      </div>
+      <div>
+        <label class="form-label" for="description">Beschrijving</label>
+        <textarea class="form-input" id="description" name="description" rows="2" placeholder="Korte omschrijving"></textarea>
+      </div>
+      <div>
+        <label class="form-label" for="note">Notitie</label>
+        <textarea class="form-input" id="note" name="note" rows="2" placeholder="Interne notities voor deze upload"></textarea>
+      </div>
+      <div>
+        <label class="form-label" for="uploader_name">Uploader naam</label>
+        <input class="form-input" id="uploader_name" name="uploader_name" placeholder="Optioneel" />
+      </div>
+      <div>
+        <label class="form-label" for="action">Uploadmodus</label>
+        <select class="form-input" id="action" name="action">
+          <option value="new" selected>Nieuwe versie</option>
+          <option value="replace">Vervang nieuwste</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" data-close-upload>Annuleer</button>
+        <button type="submit" class="btn-primary">Uploaden</button>
+      </div>
+      <div id="upload-progress" class="progress hidden">
+        <div class="progress-bar" role="progressbar" style="width:0%"></div>
+      </div>
+    </form>
+  </div>
+</div>

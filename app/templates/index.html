@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}ProSync — Overzicht{% endblock %}
+{% block content %}
+<section class="rounded-xl bg-white p-6 shadow-sm">
+  <form method="get" class="grid gap-4 md:grid-cols-4">
+    <div class="md:col-span-2">
+      <label class="form-label">Zoeken</label>
+      <input type="search" name="q" value="{{ search_term }}" placeholder="Naam, beschrijving of dienst" class="form-input" />
+    </div>
+    <div>
+      <label class="form-label">Diensttype</label>
+      <select name="service" class="form-input">
+        <option value="">Alle</option>
+        {% for service in service_types %}
+          <option value="{{ service }}" {% if service == service_filter %}selected{% endif %}>{{ service }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="form-label">Sortering</label>
+      <select name="sort" class="form-input">
+        <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Nieuwste eerst</option>
+        <option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>Oudste eerst</option>
+        <option value="size" {% if sort == 'size' %}selected{% endif %}>Grootste bestanden</option>
+      </select>
+    </div>
+    <div>
+      <label class="form-label">Van datum</label>
+      <input type="date" name="start" value="{{ start_date }}" class="form-input" />
+    </div>
+    <div>
+      <label class="form-label">Tot datum</label>
+      <input type="date" name="end" value="{{ end_date }}" class="form-input" />
+    </div>
+    <div class="md:col-span-4 flex items-end justify-end gap-2">
+      <a href="/" class="btn-secondary">Reset</a>
+      <button type="submit" class="btn-primary">Toepassen</button>
+    </div>
+  </form>
+</section>
+
+<section class="mt-6 grid gap-4 lg:grid-cols-2">
+  {% if presentations %}
+    {% for presentation in presentations %}
+      <article class="presentation-card">
+        <header class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-slate-900">{{ presentation.logical_name }}</h2>
+          <span class="service-tag" style="--tag-color: {{ presentation.service_type|servicetag }}">{{ presentation.service_type or 'Onbekend' }}</span>
+        </header>
+        <p class="mt-2 text-sm text-slate-600">{{ presentation.description or 'Geen beschrijving' }}</p>
+        <dl class="mt-3 grid grid-cols-2 gap-2 text-sm">
+          <div>
+            <dt class="text-slate-500">Laatst geüpdatet</dt>
+            <dd class="font-medium">{{ presentation.updated_at.strftime('%d-%m-%Y %H:%M') }}</dd>
+          </div>
+          <div>
+            <dt class="text-slate-500">Grootte (laatste)</dt>
+            <dd class="font-medium">
+              {% if presentation.latest_version %}
+                {{ (presentation.latest_version.file_size / 1024 / 1024)|round(2) }} MB
+              {% else %}
+                Onbekend
+              {% endif %}
+            </dd>
+          </div>
+        </dl>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <a class="btn-primary" href="{{ url_for('core.download_latest', presentation_id=presentation.id) }}">Download nieuwste</a>
+          <a class="btn-secondary" href="{{ url_for('core.presentation_detail', presentation_id=presentation.id) }}">Bekijk versies</a>
+          <button class="btn-secondary" type="button" data-copy="{{ share_link(presentation) }}">Deel link</button>
+        </div>
+      </article>
+    {% endfor %}
+  {% else %}
+    <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">
+      Nog geen presentaties gevonden. Gebruik de uploadknop om te beginnen.
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
